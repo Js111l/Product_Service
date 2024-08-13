@@ -1,0 +1,25 @@
+server:
+  port: 8080
+spring:
+  batch:
+    job:
+      enabled: false
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    properties:
+      dialect: org.hibernate.dialect.PostgreSQLDialect
+  flyway:
+    enabled: true
+    locations: classpath:db
+    schemas: public
+    encoding: UTF-8
+    ignore-missing-migrations: true
+    clean-disabled: true
+    baseline-on-migrate: true
+    baseline-version: '0.0'
+  datasource:
+    url: jdbc:postgresql://localhost:5432/product_db
+    username: admin
+    password: password
+    driver-class-name: org.postgresql.Driver
