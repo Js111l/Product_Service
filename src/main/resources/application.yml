@@ -19,7 +19,7 @@ spring:
     baseline-on-migrate: true
     baseline-version: '0.0'
   datasource:
-    url: jdbc:postgresql://localhost:5432/product_db
+    url: jdbc:postgresql://localhost:5432/products_db
     username: admin
     password: password
     driver-class-name: org.postgresql.Driver

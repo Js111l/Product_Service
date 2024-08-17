@@ -5,43 +5,32 @@ import lombok.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.List;
-
 
 @Table(name = "PRODUCT")
 @Entity
 @Data
 @EqualsAndHashCode(callSuper = true)
 public class Product extends BaseEntity {
-
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    protected Long id;
+    @Column(name = "name")
     private String name;
+    @Column(name = "description")
     private String description;
-
-    @Column(name = "created_at")
-    private LocalDateTime createdAt;
-
-    @Column(name = "start_date_of_sale")
-    private LocalDate startDateOfSale;
-
-    @Column(name = "end_date_of_sale")
-    private LocalDate endDateOfSale;
-
+    @Column(name = "created_date")
+    private LocalDateTime created_date;
+    @Column(name = "start_date")
+    private LocalDate startDate;
+    @Column(name = "end_date")
+    private LocalDate endDate;
     @Column(name = "image_url")
     private String imageUrl;
+    @Column(name = "detail_url")
+    private String detailUrl;
 
     @PrePersist
     void setCreatedAt() {
-        this.createdAt = LocalDateTime.now();
-    }
-
-    public Product(
-            String name,
-            String description,
-            LocalDate startDateOfSale,
-            LocalDate endDateOfSale) {
-        this.name = name;
-        this.description = description;
-        this.startDateOfSale = startDateOfSale;
-        this.endDateOfSale = endDateOfSale;
+        this.created_date = LocalDateTime.now();
     }
 }
