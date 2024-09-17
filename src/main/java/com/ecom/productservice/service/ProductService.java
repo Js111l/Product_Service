@@ -7,6 +7,8 @@ import com.ecom.productservice.dao.repository.ProductRepository;
 import com.ecom.productservice.exception.ErrorKey;
 import com.ecom.productservice.exception.LogicalException;
 import com.ecom.productservice.model.ProductDashboardModel;
+import com.ecom.productservice.model.ProductModel;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -16,6 +18,7 @@ import java.util.List;
 public class ProductService implements BaseService<Product, Long> {
 
     private final ProductRepository productRepository;
+
 
     public ProductService(ProductRepository productRepository) {
         this.productRepository = productRepository;
@@ -61,5 +64,9 @@ public class ProductService implements BaseService<Product, Long> {
                 .stream()
                 .map(ProductMapper.INSTANCE::mapEntityToModel)
                 .toList();
+    }
+    public ProductModel getDetail(Long id) {
+        var result = this.productRepository.findById(id).orElseThrow();
+        return ProductMapper.INSTANCE.mapEntityToDetailModel(result);
     }
 }
