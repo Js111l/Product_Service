@@ -4,13 +4,12 @@ import com.ecom.productservice.criteria.ProductSearchCriteria;
 import com.ecom.productservice.dao.repository.ProductRepository;
 import com.ecom.productservice.model.ProductDashboardModel;
 import com.ecom.productservice.model.ProductModel;
+import com.ecom.productservice.service.AsyncImportExecutor;
 import com.ecom.productservice.service.ProductService;
 import com.ecom.productservice.service.SecurityService;
-import com.ecom.productservice.service.SecurityServiceClient;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.HttpRequestHandler;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -25,6 +24,7 @@ public class ProductController {
     private final ProductService productService;
     private final ProductRepository productRepository;
     private SecurityService securityService;
+    private AsyncImportExecutor importExecutor;
 
     @GetMapping("/dashboard")
     @CrossOrigin
@@ -43,8 +43,9 @@ public class ProductController {
     }
 
     @PostMapping("/upload")
-    public CompletableFuture<ResponseEntity<Object>> importUsers(HttpServletRequest servletRequest) {
+    public CompletableFuture<ResponseEntity<Object>> importUsers(@RequestPart("productsCsv") MultipartFile csvFile,
+                                                                 HttpServletRequest servletRequest) {
         final var currentUser = this.securityService.getCurrentUser(servletRequest.getHeader("Authorization"));
-        return null;
+        return this.importExecutor.importProducts(csvFile, currentUser.email());
     }
 }
