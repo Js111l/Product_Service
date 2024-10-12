@@ -10,16 +10,17 @@ import java.util.List;
 
 @Data
 public class ProductModel {
-    private long id;
+    private Long id;
     private String name;
     private String description;
-    private List<String> imgUrls; //todo product detail photos
+    private List<String> sizes;
+    private List<String> colorImgUrls;
     private BigDecimal price;
-    private String availableSize;
     private Long quantity; //quantity
     private ProductStockStatus stockStatus; //TODO
     private ProductStatus productStatus;
     private String color; //todo colors
-
+    private String imageUrl;
+    private String detailUrl;
 
 }

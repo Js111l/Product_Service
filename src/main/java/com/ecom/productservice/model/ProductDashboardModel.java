@@ -13,6 +13,6 @@ public record ProductDashboardModel(
         LocalDate startDate,
         LocalDate endDate,
         String imageUrl,
-        String detailImageUrl
+        String detailUrl
 ) {
 }

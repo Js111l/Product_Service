@@ -6,23 +6,18 @@ import com.ecom.productservice.dao.mapper.ProductMapper;
 import com.ecom.productservice.dao.repository.ProductRepository;
 import com.ecom.productservice.exception.ErrorKey;
 import com.ecom.productservice.exception.LogicalException;
-import com.ecom.productservice.model.ProductDashboardModel;
-import com.ecom.productservice.model.ProductModel;
-import org.springframework.http.HttpStatus;
+import com.ecom.productservice.model.*;
+import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 
 @Service
+@AllArgsConstructor
 public class ProductService implements BaseService<Product, Long> {
 
     private final ProductRepository productRepository;
-
-
-    public ProductService(ProductRepository productRepository) {
-        this.productRepository = productRepository;
-    }
 
     @Override
     public List<Product> getAll() {
