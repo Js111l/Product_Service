@@ -6,12 +6,14 @@ import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
 import lombok.AllArgsConstructor;
+import lombok.Getter;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 
 import java.util.List;
 
+@Getter
 @AllArgsConstructor
 public abstract class AbstractSearchCriteria<T extends BaseEntity> {
 
@@ -31,7 +33,11 @@ public abstract class AbstractSearchCriteria<T extends BaseEntity> {
 
     public PageRequest getPageRequest() {
         final var sort = Sort.by(this.sortAsc ? Sort.Direction.ASC : Sort.Direction.DESC, this.sortField);
-        return PageRequest.of(this.page, this.size, sort);
+        return PageRequest.of(this.calculatePage(this.page, this.size), this.size, sort);
+    }
+
+    private Integer calculatePage(final int page, final int size) {
+        return page / size;
     }
 
 }

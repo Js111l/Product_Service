@@ -3,13 +3,17 @@ package com.ecom.productservice.service;
 import com.ecom.productservice.criteria.ProductSearchCriteria;
 import com.ecom.productservice.dao.entities.Product;
 import com.ecom.productservice.dao.mapper.ProductMapper;
+import com.ecom.productservice.dao.repository.ProductCategoryRepository;
 import com.ecom.productservice.dao.repository.ProductRepository;
 import com.ecom.productservice.exception.ErrorKey;
 import com.ecom.productservice.exception.LogicalException;
 import com.ecom.productservice.model.*;
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -18,6 +22,7 @@ import java.util.List;
 public class ProductService implements BaseService<Product, Long> {
 
     private final ProductRepository productRepository;
+    private final ProductCategoryRepository productCategoryRepository;
 
     @Override
     public List<Product> getAll() {
@@ -60,8 +65,56 @@ public class ProductService implements BaseService<Product, Long> {
                 .map(ProductMapper.INSTANCE::mapEntityToModel)
                 .toList();
     }
+
     public ProductModel getDetail(Long id) {
         var result = this.productRepository.findById(id).orElseThrow();
         return ProductMapper.INSTANCE.mapEntityToDetailModel(result);
+    }
+
+    public List<ProductCategoryModel> getParentCategories() {
+        return this.productCategoryRepository
+                .findParentCategories()
+                .stream()
+                .map(ProductMapper.INSTANCE::mapEntityToProductCategoryModel)
+                .toList();
+    }
+
+    public List<ProductCategoryModel> getAllChildrenCategories(Long parentId, String parentPrefix) {
+        return this.productCategoryRepository.findAllChildren(parentId, parentPrefix)
+                .stream()
+                .map(ProductMapper.INSTANCE::mapEntityToProductCategoryModel)
+                .toList();
+    }
+
+    public Page<ProductModel> getList(ProductSearchCriteria sc) {
+        var page = this.productRepository.findAll(sc.getSpecification(), sc.getPageRequest());
+        return new PageImpl<>(page.map(ProductMapper.INSTANCE::mapEntityToDetailModel).toList(), sc.getPageRequest(), page.getTotalElements());
+    }
+
+    public List<ProductCategoryModel> getChildrenCategories(Long parentId, String parentPrefix, Boolean firstLevel) {
+        if (firstLevel) {
+            return this.productCategoryRepository.findFirstLevelChildren(parentId, parentPrefix)
+                    .stream()
+                    .map(ProductMapper.INSTANCE::mapEntityToProductCategoryModel)
+                    .toList();
+        } else {
+            return this.productCategoryRepository.findAllChildren(parentId, parentPrefix)
+                    .stream()
+                    .map(ProductMapper.INSTANCE::mapEntityToProductCategoryModel)
+                    .toList();
+        }
+    }
+
+    public List<ProductCategoryMenuBarModel> getMenuBarCategories() {
+        final var result = new ArrayList<ProductCategoryMenuBarModel>();
+        this.productCategoryRepository.findParentCategories().forEach(parent -> {
+            var model = new ProductCategoryMenuBarModel();
+            model.setId(parent.getId());
+            model.setPath(parent.getPath());
+            model.setLabel(parent.getLabel());
+            model.setFirstLevelChildren(this.getChildrenCategories(parent.getId(), parent.getPath(), true));
+            result.add(model);
+        });
+        return result;
     }
 }

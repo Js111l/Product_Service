@@ -5,15 +5,14 @@ import lombok.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Table(name = "PRODUCT")
 @Entity
 @Data
 @EqualsAndHashCode(callSuper = true)
 public class Product extends BaseEntity {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    protected Long id;
     @Column(name = "name")
     private String name;
     @Column(name = "description")
@@ -28,7 +27,14 @@ public class Product extends BaseEntity {
     private String imageUrl;
     @Column(name = "detail_url")
     private String detailUrl;
-
+    @ManyToMany
+    @JoinTable(name = "PRODUCT_CATEGORY_MAP",
+            joinColumns =
+            @JoinColumn(name = "PRODUCT_ID", referencedColumnName = "ID"),
+            inverseJoinColumns =
+            @JoinColumn(name = "CATEGORY_ID", referencedColumnName = "ID")
+    )
+    private List<ProductCategory> productCategories = new ArrayList<>();
     @PrePersist
     void setCreatedAt() {
         this.created_date = LocalDateTime.now();

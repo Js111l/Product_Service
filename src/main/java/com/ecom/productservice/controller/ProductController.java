@@ -1,6 +1,8 @@
 package com.ecom.productservice.controller;
 
 import com.ecom.productservice.criteria.ProductSearchCriteria;
+import com.ecom.productservice.model.ProductCategoryMenuBarModel;
+import com.ecom.productservice.model.ProductCategoryModel;
 import com.ecom.productservice.model.ProductDashboardModel;
 import com.ecom.productservice.model.ProductModel;
 import com.ecom.productservice.service.*;
@@ -26,12 +28,41 @@ public class ProductController {
     @GetMapping("/dashboard")
     @CrossOrigin
     private List<ProductDashboardModel> productDashboardModels(
+            @RequestParam(value = "page") Integer page,
+            @RequestParam(value = "size") Integer size,
+            @RequestParam(value = "sortField") String sortField,
+            @RequestParam(value = "sortAsc") Boolean sortAsc,
             @RequestParam("bestseller") Boolean bestseller,
             HttpServletRequest servletRequest
     ) {
         //TODO
-        var sc = new ProductSearchCriteria(0, 40, true, "created_at", true);
+        final var sc = ProductSearchCriteria.builder()
+                .page(page)
+                .size(size)
+                .sortField(sortField)
+                .sortAsc(sortAsc)
+                .bestsellerOrNewFlag(bestseller)
+                .build();
         return productService.getDahboardModels(sc);
+    }
+
+    @GetMapping("/list")
+    @CrossOrigin
+    private Page<ProductModel> getList(
+            @RequestParam(value = "page") Integer page,
+            @RequestParam(value = "size") Integer size,
+            @RequestParam(value = "sortField") String sortField,
+            @RequestParam(value = "sortAsc") Boolean sortAsc,
+            @RequestParam(value = "category", required = false) String categoryPath) {
+        final var sc = ProductSearchCriteria.builder()
+                .page(page)
+                .size(size)
+                .sortField(sortField)
+                .sortAsc(sortAsc)
+                .categoryPath(categoryPath)
+                .build();
+
+        return productService.getList(sc);
     }
 
     @GetMapping("/{id}")
@@ -46,4 +77,31 @@ public class ProductController {
         final var currentUser = this.securityService.getCurrentUser(servletRequest.getHeader("Authorization"));
         return this.importExecutor.importProducts(csvFile, currentUser.email());
     }
+
+    @GetMapping("/categories/parents")
+    @CrossOrigin
+    public List<ProductCategoryModel> getParentCategories() {
+        return this.productService.getParentCategories();
+    }
+
+    @GetMapping("/categories/menubar")
+    @CrossOrigin
+    public List<ProductCategoryMenuBarModel> getCategoriesForMenuBar() {
+        return this.productService.getMenuBarCategories();
+    }
+
+    @GetMapping("/categories/children")
+    @CrossOrigin
+    public List<ProductCategoryModel> getDirectChildren(Long parentId,
+                                                        String parentPrefix,
+                                                        Boolean firstLevel) {
+        return this.productService.getChildrenCategories(parentId, parentPrefix, firstLevel);
+    }
 }
+
+
+
+
+
+
+
