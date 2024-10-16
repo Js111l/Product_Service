@@ -5,12 +5,14 @@ import com.ecom.productservice.dao.entities.Product;
 import com.ecom.productservice.dao.mapper.ProductMapper;
 import com.ecom.productservice.dao.repository.ProductCategoryRepository;
 import com.ecom.productservice.dao.repository.ProductRepository;
+import com.ecom.productservice.dao.repository.UserProductRepository;
 import com.ecom.productservice.exception.ErrorKey;
 import com.ecom.productservice.exception.LogicalException;
 import com.ecom.productservice.model.*;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -22,6 +24,7 @@ import java.util.List;
 public class ProductService implements BaseService<Product, Long> {
 
     private final ProductRepository productRepository;
+    private final UserProductRepository userProductRepository;
     private final ProductCategoryRepository productCategoryRepository;
 
     @Override
@@ -68,7 +71,28 @@ public class ProductService implements BaseService<Product, Long> {
 
     public ProductModel getDetail(Long id) {
         var result = this.productRepository.findById(id).orElseThrow();
-        return ProductMapper.INSTANCE.mapEntityToDetailModel(result);
+        var model = ProductMapper.INSTANCE.mapEntityToDetailModel(result);
+        final var mockSizes = List.of("S", "M", "L", "XL");
+        final var mockColorUrls = List.of("/jeans.jpg");
+        final var mockImages = List.of(
+                new ImageModel(null, "/jeans.jpg", "", ""),
+                new ImageModel(null, "/jeans.jpg", "", ""),
+                new ImageModel(null, "/jeans.jpg", "", "")
+        );
+        model.setSizes(mockSizes);
+        model.setColorImgUrls(mockColorUrls);
+        model.setImages(mockImages);
+        return model;
+    }
+
+
+
+    public Page<ProductModel> getUserFavoriteProductsList(Long currentUserId, int first, int max) {
+        return this.userProductRepository.findAll(currentUserId, PageRequest.of(first, max));
+    }
+
+    public Long getFavoritesCount(Long userId) {
+        return this.userProductRepository.getCheckoutCount(userId);
     }
 
     public List<ProductCategoryModel> getParentCategories() {

@@ -1,7 +1,9 @@
 package com.ecom.productservice.dao.mapper;
 
+import com.ecom.productservice.dao.entities.CheckoutProduct;
 import com.ecom.productservice.dao.entities.Product;
 import com.ecom.productservice.dao.entities.ProductCategory;
+import com.ecom.productservice.model.CartProductModel;
 import com.ecom.productservice.model.ProductCategoryModel;
 import com.ecom.productservice.model.ProductDashboardModel;
 import com.ecom.productservice.model.ProductModel;
@@ -19,4 +21,6 @@ public interface ProductMapper {
 
     @Mapping(source = "id", target = "id")
     ProductCategoryModel mapEntityToProductCategoryModel(ProductCategory entity);
+
+    CartProductModel mapEntityToCartModel(CheckoutProduct entity);
 }

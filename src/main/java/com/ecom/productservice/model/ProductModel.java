@@ -5,8 +5,8 @@ import com.ecom.productservice.model.enums.ProductStockStatus;
 import lombok.Data;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.util.List;
+import java.util.List;import java.time.LocalDateTime;
+
 
 @Data
 public class ProductModel {
@@ -14,6 +14,7 @@ public class ProductModel {
     private String name;
     private String description;
     private List<String> sizes;
+    private List<ImageModel> images;   //todo product detail photos
     private List<String> colorImgUrls;
     private BigDecimal price;
     private Long quantity; //quantity
@@ -22,5 +23,4 @@ public class ProductModel {
     private String color; //todo colors
     private String imageUrl;
     private String detailUrl;
-
 }
