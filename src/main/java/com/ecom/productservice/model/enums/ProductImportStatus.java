@@ -1,4 +1,4 @@
-package com.ecom.productservice.dao.entities;
+package com.ecom.productservice.model.enums;
 
 public enum ProductImportStatus {
     IMPORTED,
