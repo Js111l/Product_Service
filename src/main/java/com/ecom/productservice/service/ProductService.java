@@ -2,6 +2,7 @@ package com.ecom.productservice.service;
 
 import com.ecom.productservice.criteria.ProductSearchCriteria;
 import com.ecom.productservice.dao.entities.Product;
+import com.ecom.productservice.dao.entities.ProductCategory;
 import com.ecom.productservice.dao.mapper.ProductMapper;
 import com.ecom.productservice.dao.repository.ProductCategoryRepository;
 import com.ecom.productservice.dao.repository.ProductRepository;
@@ -10,12 +11,14 @@ import com.ecom.productservice.exception.ErrorKey;
 import com.ecom.productservice.exception.LogicalException;
 import com.ecom.productservice.model.*;
 import lombok.AllArgsConstructor;
+import org.antlr.v4.runtime.misc.Pair;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 
@@ -86,7 +89,6 @@ public class ProductService implements BaseService<Product, Long> {
     }
 
 
-
     public Page<ProductModel> getUserFavoriteProductsList(Long currentUserId, int first, int max) {
         return this.userProductRepository.findAll(currentUserId, PageRequest.of(first, max));
     }
@@ -129,6 +131,20 @@ public class ProductService implements BaseService<Product, Long> {
         }
     }
 
+    public List<ProductCategoryModel> getChildrenCategories(String parentPrefix, Boolean firstLevel) {
+        if (firstLevel) {
+            return this.productCategoryRepository.findFirstLevelChildren(parentPrefix)
+                    .stream()
+                    .map(ProductMapper.INSTANCE::mapEntityToProductCategoryModel)
+                    .toList();
+        } else {
+            return this.productCategoryRepository.findAllChildren(parentPrefix)
+                    .stream()
+                    .map(ProductMapper.INSTANCE::mapEntityToProductCategoryModel)
+                    .toList();
+        }
+    }
+
     public List<ProductCategoryMenuBarModel> getMenuBarCategories() {
         final var result = new ArrayList<ProductCategoryMenuBarModel>();
         this.productCategoryRepository.findParentCategories().forEach(parent -> {
@@ -140,5 +156,17 @@ public class ProductService implements BaseService<Product, Long> {
             result.add(model);
         });
         return result;
+    }
+
+    public List<ProductCategoryOptionModel> getParentCategoriesOptionModels() {
+        return this.productCategoryRepository.findParentCategories()
+                .stream().map(x -> ProductMapper.INSTANCE.mapEntityToOptionModel(x))
+                .toList();
+    }
+
+    public Page<ReturnListModel> getReturns(ProductSearchCriteria sc) {
+        this.productRepository.findAll(sc.getSpecification(), sc.getPageRequest())
+                .toList();
+        return null;
     }
 }

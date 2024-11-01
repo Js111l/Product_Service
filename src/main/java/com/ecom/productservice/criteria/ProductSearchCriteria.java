@@ -8,21 +8,25 @@ import jakarta.persistence.criteria.Root;
 import lombok.Builder;
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.util.CollectionUtils;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 @Getter
 public class ProductSearchCriteria extends AbstractSearchCriteria<Product> {
     private final Boolean bestsellerOrNewFlag;
     private final String categoryPath;
+    private final List<Long> categories;
 
     @Builder
-    public ProductSearchCriteria(Integer page, Integer size, Boolean sortAsc, String sortField, Boolean bestsellerOrNewFlag, String categoryPath) {
+    public ProductSearchCriteria(Integer page, Integer size, Boolean sortAsc, String sortField, Boolean bestsellerOrNewFlag, String categoryPath, List<Long> categories) {
         super(page, size, sortAsc, sortField);
         this.bestsellerOrNewFlag = bestsellerOrNewFlag;
         this.categoryPath = categoryPath;
+        this.categories = categories;
     }
 
     @Override
@@ -39,12 +43,10 @@ public class ProductSearchCriteria extends AbstractSearchCriteria<Product> {
             }
         }
         if (StringUtils.isNotBlank(this.categoryPath)) {
-//            final var sub = query.subquery(ProductCategory.class);
-//            final var categoryRoot = sub.from(EmployeeAbsence.class);
-
-            //raczej powinien przefiltrowac po wszystkich produktach, ktore naleza do konkretnej kategorii i sa dziecmi.
-            //np. apparel.boots -> powinien wskazac wszystkie "dzieci" tej kategorii
             array.add(cb.like(root.get("productCategories").get("path"), this.categoryPath + "%"));
+        }
+        if (categories != null && !categories.isEmpty()) {
+            array.add(root.get("productCategories").get("id").in(categories));
         }
         return array;
     }

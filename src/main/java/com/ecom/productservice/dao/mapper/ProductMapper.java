@@ -3,10 +3,7 @@ package com.ecom.productservice.dao.mapper;
 import com.ecom.productservice.dao.entities.CheckoutProduct;
 import com.ecom.productservice.dao.entities.Product;
 import com.ecom.productservice.dao.entities.ProductCategory;
-import com.ecom.productservice.model.CartProductModel;
-import com.ecom.productservice.model.ProductCategoryModel;
-import com.ecom.productservice.model.ProductDashboardModel;
-import com.ecom.productservice.model.ProductModel;
+import com.ecom.productservice.model.*;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.factory.Mappers;
@@ -20,7 +17,13 @@ public interface ProductMapper {
     ProductModel mapEntityToDetailModel(Product entity);
 
     @Mapping(source = "id", target = "id")
+    @Mapping(source = "parentCategory.id", target = "parentCategoryId")
     ProductCategoryModel mapEntityToProductCategoryModel(ProductCategory entity);
+
+    @Mapping(source = "id", target = "key")
+    @Mapping(source = "childCategories", target = "children")
+    ProductCategoryOptionModel mapEntityToOptionModel(ProductCategory entity);
+
 
     CartProductModel mapEntityToCartModel(CheckoutProduct entity);
 }

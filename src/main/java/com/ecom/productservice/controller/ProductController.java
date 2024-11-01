@@ -1,12 +1,7 @@
 package com.ecom.productservice.controller;
 
 import com.ecom.productservice.criteria.ProductSearchCriteria;
-import com.ecom.productservice.model.CartModel;
-import com.ecom.productservice.model.CheckoutModel;
-import com.ecom.productservice.model.ProductCategoryMenuBarModel;
-import com.ecom.productservice.model.ProductCategoryModel;
-import com.ecom.productservice.model.ProductDashboardModel;
-import com.ecom.productservice.model.ProductModel;
+import com.ecom.productservice.model.*;
 import com.ecom.productservice.service.*;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.AllArgsConstructor;
@@ -29,47 +24,66 @@ public class ProductController {
     private AsyncImportExecutor importExecutor;
 
     @GetMapping("/dashboard")
-    @CrossOrigin
     private List<ProductDashboardModel> productDashboardModels(
-            @RequestParam(value = "page") Integer page,
-            @RequestParam(value = "size") Integer size,
-            @RequestParam(value = "sortField") String sortField,
-            @RequestParam(value = "sortAsc") Boolean sortAsc,
-            @RequestParam("bestseller") Boolean bestseller,
+//            @RequestParam(value = "page") Integer page,
+//            @RequestParam(value = "size") Integer size,
+//            @RequestParam(value = "sortField") String sortField,
+//            @RequestParam(value = "sortAsc") Boolean sortAsc,
+//            @RequestParam("bestseller") Boolean bestseller,
             HttpServletRequest servletRequest
     ) {
         //TODO
         final var sc = ProductSearchCriteria.builder()
-                .page(page)
-                .size(size)
-                .sortField(sortField)
-                .sortAsc(sortAsc)
-                .bestsellerOrNewFlag(bestseller)
+//                .page(page)
+//                .size(size)
+//                .sortField(sortField)
+//                .sortAsc(sortAsc)
+//                .bestsellerOrNewFlag(bestseller)
+                .page(0)
+                .size(20)
+                .sortField("id")
+                .sortAsc(true)
+                .bestsellerOrNewFlag(null)
                 .build();
         return productService.getDahboardModels(sc);
     }
 
     @GetMapping("/list")
-    @CrossOrigin
     private Page<ProductModel> getList(
             @RequestParam(value = "page") Integer page,
             @RequestParam(value = "size") Integer size,
             @RequestParam(value = "sortField") String sortField,
             @RequestParam(value = "sortAsc") Boolean sortAsc,
-            @RequestParam(value = "category", required = false) String categoryPath) {
+            @RequestParam(value = "categories", required = false) List<Long> categories) {
         final var sc = ProductSearchCriteria.builder()
                 .page(page)
                 .size(size)
                 .sortField(sortField)
                 .sortAsc(sortAsc)
-                .categoryPath(categoryPath)
+                //.categoryPath(categoryPath)
+                .categories(categories)
                 .build();
 
         return productService.getList(sc);
     }
 
+    @GetMapping("/list/returns")
+    private Page<ReturnListModel> getReturns(
+            @RequestParam(value = "page") Integer page,
+            @RequestParam(value = "size") Integer size,
+            @RequestParam(value = "sortField") String sortField,
+            @RequestParam(value = "sortAsc") Boolean sortAsc) {
+        final var sc = ProductSearchCriteria.builder()
+                .page(page)
+                .size(size)
+                .sortField(sortField)
+                .sortAsc(sortAsc)
+                .build();
+
+        return productService.getReturns(sc);
+    }
+
     @GetMapping("/{id}")
-    @CrossOrigin
     private ProductModel getDetail(@PathVariable("id") Long id) {
         return productService.getDetail(id);
     }
@@ -82,13 +96,11 @@ public class ProductController {
     }
 
     @PostMapping("/user-checkout")
-    @CrossOrigin
     public void addCheckoutProducts(@RequestBody CheckoutModel model) {
         this.checkoutService.add(model);
     }
 
     @GetMapping("/user-checkout/products")
-    @CrossOrigin
     public CartModel getProducts(HttpServletRequest servletRequest) {
         // var currentUser = this.securityService.getCurrentUser(servletRequest.getHeader("Authorization"));
         return this.checkoutService.getProductsFromCheckout(1L);
@@ -96,7 +108,6 @@ public class ProductController {
 
 
     @PostMapping("/user-checkout/products")
-    @CrossOrigin
     public void setCheckoutProductQuantity(//@PathVariable("id") Long id,
                                            @RequestParam("productId") Long id,
                                            @RequestParam("quantity") Long value, HttpServletRequest servletRequest) {
@@ -106,31 +117,29 @@ public class ProductController {
 
 
     @GetMapping("/user-checkout/{userId}")
-    @CrossOrigin
     private Long getCheckoutCount(@PathVariable("userId") Long userId) {
         return this.checkoutService.getCheckoutCount(userId);
     }
 
     @GetMapping("/categories/children")
-    @CrossOrigin
-    public List<ProductCategoryModel> getDirectChildren(Long parentId,
-                                                        String parentPrefix,
-                                                        Boolean firstLevel) {
-        return this.productService.getChildrenCategories(parentId, parentPrefix, firstLevel);
+    public List<ProductCategoryModel> getDirectChildren(@RequestParam("parentPath") String parentPrefix, @RequestParam("firstLevel") Boolean firstLevel) {
+        return this.productService.getChildrenCategories(parentPrefix, firstLevel);
     }
 
     @GetMapping("/categories/parents")
-    @CrossOrigin
     public List<ProductCategoryModel> getParentCategories() {
         return this.productService.getParentCategories();
     }
 
+    @GetMapping("/categories/parents/options")
+    public List<ProductCategoryOptionModel> getParentCategoriesOptionModel() {
+        return this.productService.getParentCategoriesOptionModels();
+    }
+
     @GetMapping("/categories/menubar")
-    @CrossOrigin
     public List<ProductCategoryMenuBarModel> getCategoriesForMenuBar() {
         return this.productService.getMenuBarCategories();
     }
-
 }
 
 

@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.Arrays;
 import java.util.List;
 
 @Repository
@@ -22,7 +23,21 @@ public interface ProductCategoryRepository extends JpaRepository<ProductCategory
     List<ProductCategory> findFirstLevelChildren(@Param("parentId") Long parentId,
                                                  @Param("parentPrefix") String parentPrefix);
 
+
+    @Query("select pc from ProductCategory pc where pc.parentCategory.path = :parentPrefix" +
+            "  and pc.path like concat(:parentPrefix, '%')")
+    List<ProductCategory> findAllChildren(@Param("parentPrefix") String parentPrefix);
+
+    @Query(value = """
+            select pc.* from product_category pc 
+            join product_category parent on parent.id = pc.parent_id 
+            where
+            pc.path like concat(:parentPrefix, '%')
+            and pc.path ~ '^[a-zA-Z]+\\.[a-zA-Z]+$' 
+            """, nativeQuery = true)
+    List<ProductCategory> findFirstLevelChildren(@Param("parentPrefix") String parentPrefix);
+
+
     @Query("select pc from ProductCategory pc where pc.parentCategory is null")
     List<ProductCategory> findParentCategories();
-
 }
