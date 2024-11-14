@@ -3,9 +3,11 @@ package com.ecom.productservice.controller;
 import com.ecom.productservice.criteria.ProductSearchCriteria;
 import com.ecom.productservice.model.*;
 import com.ecom.productservice.service.*;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -67,6 +69,49 @@ public class ProductController {
         return productService.getList(sc);
     }
 
+    @GetMapping("/list/user-favorite")
+    private Page<ProductModel> getFavoriteProducts(
+            @RequestParam(value = "page") Integer page,
+            @RequestParam(value = "size") Integer size,
+            @RequestParam(value = "sortField") String sortField,
+            @RequestParam(value = "sortAsc") Boolean sortAsc,
+            @RequestParam(value = "categories", required = false) List<Long> categories,
+            HttpServletRequest servletRequest) {
+        var sessionId = "";
+        for (Cookie cookieElement : servletRequest.getCookies()) {
+            if (cookieElement.getName().equals("sessionId")) {
+                sessionId = cookieElement.getValue();
+                break;
+            }
+        }
+
+        final var sc = ProductSearchCriteria.builder()
+                .page(page)
+                .size(size)
+                .sortField(sortField)
+                .sortAsc(sortAsc)
+                .categories(categories)
+                .sessionId(sessionId)
+                .getFavoriteList(true)
+                .build();
+
+        return productService.getList(sc);
+    }
+
+    @PostMapping("/user-favorite")
+    private ResponseEntity<HttpStatus> addProductToFavorite(@RequestBody UserProductRequestModel requestModel, HttpServletRequest servletRequest) {
+        String sessionId = null;
+        for (Cookie cookieElement : servletRequest.getCookies()) {
+            if (cookieElement.getName().equals("sessionId")) {
+                sessionId = cookieElement.getValue();
+                break;
+            }
+        }
+        productService.addUserProduct(requestModel, sessionId);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+
     @GetMapping("/list/returns")
     private Page<ReturnListModel> getReturns(
             @RequestParam(value = "page") Integer page,
@@ -96,14 +141,28 @@ public class ProductController {
     }
 
     @PostMapping("/user-checkout")
-    public void addCheckoutProducts(@RequestBody CheckoutModel model) {
-        this.checkoutService.add(model);
+    public void addCheckoutProducts(@RequestBody CheckoutModel model,
+                                    HttpServletRequest servletRequest) {
+        String sessionId = null;
+        for (Cookie cookieElement : servletRequest.getCookies()) {
+            if (cookieElement.getName().equals("sessionId")) {
+                sessionId = cookieElement.getValue();
+                break;
+            }
+        }
+        this.checkoutService.add(model, sessionId);
     }
 
     @GetMapping("/user-checkout/products")
     public CartModel getProducts(HttpServletRequest servletRequest) {
-        // var currentUser = this.securityService.getCurrentUser(servletRequest.getHeader("Authorization"));
-        return this.checkoutService.getProductsFromCheckout(1L);
+        String sessionId = null;
+        for (Cookie cookieElement : servletRequest.getCookies()) {
+            if (cookieElement.getName().equals("sessionId")) {
+                sessionId = cookieElement.getValue();
+                break;
+            }
+        }
+        return this.checkoutService.getProductsFromCheckout(sessionId);
     }
 
 
@@ -111,18 +170,34 @@ public class ProductController {
     public void setCheckoutProductQuantity(//@PathVariable("id") Long id,
                                            @RequestParam("productId") Long id,
                                            @RequestParam("quantity") Long value, HttpServletRequest servletRequest) {
-        //final var currentUser = this.securityService.getCurrentUser(servletRequest.getHeader("Authorization"));
-        this.checkoutService.setQuantity(id, value, 1L);
+        String sessionId = null;
+        for (Cookie cookieElement : servletRequest.getCookies()) {
+            if (cookieElement.getName().equals("sessionId")) {
+                sessionId = cookieElement.getValue();
+                break;
+            }
+        }
+        this.checkoutService.setQuantity(id, value, sessionId);
     }
 
 
-    @GetMapping("/user-checkout/{userId}")
-    private Long getCheckoutCount(@PathVariable("userId") Long userId) {
-        return this.checkoutService.getCheckoutCount(userId);
+    @GetMapping("/user-checkout")
+    private CheckoutCountModel getCheckoutCount(HttpServletRequest servletRequest) {
+        String sessionId = null;
+        for (Cookie cookieElement : servletRequest.getCookies()) {
+            if (cookieElement.getName().equals("sessionId")) {
+                sessionId = cookieElement.getValue();
+                break;
+            }
+        }
+        return new CheckoutCountModel(
+                this.checkoutService.getCheckoutCount(sessionId)
+        );
     }
 
     @GetMapping("/categories/children")
-    public List<ProductCategoryModel> getDirectChildren(@RequestParam("parentPath") String parentPrefix, @RequestParam("firstLevel") Boolean firstLevel) {
+    public List<ProductCategoryModel> getDirectChildren(@RequestParam("parentPath") String parentPrefix,
+                                                        @RequestParam("firstLevel") Boolean firstLevel) {
         return this.productService.getChildrenCategories(parentPrefix, firstLevel);
     }
 

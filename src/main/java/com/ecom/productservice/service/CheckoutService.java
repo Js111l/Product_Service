@@ -21,32 +21,36 @@ public class CheckoutService {
     private final CheckoutRepository checkoutRepository;
     private final SecurityService securityService;
 
-    public void add(CheckoutModel model) {
-        final var checkoutProductOptional = this.checkoutRepository.findByProductIdUserId(model.product().getId(), model.userId());
+    public void add(CheckoutModel model, String sessionId) {
+        final var checkoutProductOptional = this.checkoutRepository.findByProductIdUserId(model.product().getId(), model.sessionId());
         if (checkoutProductOptional.isPresent()) {
             var entity = checkoutProductOptional.get();
             entity.setQuantity((int) (entity.getQuantity() + model.quantity()));
+            entity.setSessionId(sessionId);
         } else {
-            this.checkoutRepository.save(CheckoutMapper.INSTANCE.mapModelToEntity(model));
+            var entity = CheckoutMapper.INSTANCE.mapModelToEntity(model);
+            entity.setSessionId(sessionId);
+            this.checkoutRepository.save(entity);
         }
     }
 
-    public void setQuantity(Long productId, Long value, Long currentUserId) {
-        this.checkoutRepository.setQuantity(productId, value, currentUserId);
+    public void setQuantity(Long productId, Long value, String sessionId) {
+        this.checkoutRepository.setQuantity(productId, value, sessionId);
     }
 
-    public void getList(Long currentUserId) {
-        this.checkoutRepository.findAllByUserId(currentUserId);
+    public void getList(String sessionId) {
+        this.checkoutRepository.findAllByUserId(sessionId);
     }
 
-    public Long getCheckoutCount(Long userId) {
-        return this.checkoutRepository.getCheckoutCount(userId);
+    public long getCheckoutCount(String sessionId) {
+        var result = this.checkoutRepository.getCheckoutCount(sessionId);
+        return result == null ? 0 : result;
     }
 
-    public CartModel getProductsFromCheckout(Long userId) {
+    public CartModel getProductsFromCheckout(String sessionId) {
         final var totalPrice = new AtomicReference<>(BigDecimal.ZERO);
         final var list = new ArrayList<CartProductModel>();
-        this.checkoutRepository.findByUserId(userId).forEach((entity) -> {
+        this.checkoutRepository.findByUserSessionId(sessionId).forEach((entity) -> {
             //entity.getPrice()
             var mockPrice = new BigDecimal("8999");
             totalPrice.set(totalPrice.get().add(mockPrice));

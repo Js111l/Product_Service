@@ -2,7 +2,7 @@ package com.ecom.productservice.service;
 
 import com.ecom.productservice.criteria.ProductSearchCriteria;
 import com.ecom.productservice.dao.entities.Product;
-import com.ecom.productservice.dao.entities.ProductCategory;
+import com.ecom.productservice.dao.entities.UserProduct;
 import com.ecom.productservice.dao.mapper.ProductMapper;
 import com.ecom.productservice.dao.repository.ProductCategoryRepository;
 import com.ecom.productservice.dao.repository.ProductRepository;
@@ -11,14 +11,11 @@ import com.ecom.productservice.exception.ErrorKey;
 import com.ecom.productservice.exception.LogicalException;
 import com.ecom.productservice.model.*;
 import lombok.AllArgsConstructor;
-import org.antlr.v4.runtime.misc.Pair;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 
@@ -88,11 +85,6 @@ public class ProductService implements BaseService<Product, Long> {
         return model;
     }
 
-
-    public Page<ProductModel> getUserFavoriteProductsList(Long currentUserId, int first, int max) {
-        return this.userProductRepository.findAll(currentUserId, PageRequest.of(first, max));
-    }
-
     public Long getFavoritesCount(Long userId) {
         return this.userProductRepository.getCheckoutCount(userId);
     }
@@ -100,13 +92,6 @@ public class ProductService implements BaseService<Product, Long> {
     public List<ProductCategoryModel> getParentCategories() {
         return this.productCategoryRepository
                 .findParentCategories()
-                .stream()
-                .map(ProductMapper.INSTANCE::mapEntityToProductCategoryModel)
-                .toList();
-    }
-
-    public List<ProductCategoryModel> getAllChildrenCategories(Long parentId, String parentPrefix) {
-        return this.productCategoryRepository.findAllChildren(parentId, parentPrefix)
                 .stream()
                 .map(ProductMapper.INSTANCE::mapEntityToProductCategoryModel)
                 .toList();
@@ -160,7 +145,7 @@ public class ProductService implements BaseService<Product, Long> {
 
     public List<ProductCategoryOptionModel> getParentCategoriesOptionModels() {
         return this.productCategoryRepository.findParentCategories()
-                .stream().map(x -> ProductMapper.INSTANCE.mapEntityToOptionModel(x))
+                .stream().map(ProductMapper.INSTANCE::mapEntityToOptionModel)
                 .toList();
     }
 
@@ -168,5 +153,12 @@ public class ProductService implements BaseService<Product, Long> {
         this.productRepository.findAll(sc.getSpecification(), sc.getPageRequest())
                 .toList();
         return null;
+    }
+
+    public void addUserProduct(UserProductRequestModel requestModel, String sessionId) {
+        var entity = new UserProduct();
+        entity.setProductId(requestModel.productId());
+        entity.setSessionId(sessionId);
+        this.userProductRepository.save(entity);
     }
 }

@@ -9,7 +9,7 @@ CREATE SEQUENCE IF NOT EXISTS checkout_product_sequence
 CREATE TABLE CHECKOUT_PRODUCT(
     id bigint PRIMARY KEY DEFAULT nextval('checkout_product_sequence'::regclass),
     product_id bigint,
-    user_id bigint,
+    session_id text,
     quantity integer,
     CONSTRAINT checkout_product_product_id_fkey FOREIGN KEY (product_id) REFERENCES product (id)
 );
