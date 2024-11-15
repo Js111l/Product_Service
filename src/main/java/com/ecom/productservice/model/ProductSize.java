@@ -1,4 +1,9 @@
 package com.ecom.productservice.model;
 
-public record ProductSize(String size, boolean available) {
+public enum ProductSize{
+    S,
+    M,
+    L,
+    XL,
+    XXL
 }

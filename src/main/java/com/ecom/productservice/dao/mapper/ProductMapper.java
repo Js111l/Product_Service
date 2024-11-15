@@ -1,6 +1,7 @@
 package com.ecom.productservice.dao.mapper;
 
 import com.ecom.productservice.dao.entities.CheckoutProduct;
+import com.ecom.productservice.dao.entities.Color;
 import com.ecom.productservice.dao.entities.Product;
 import com.ecom.productservice.dao.entities.ProductCategory;
 import com.ecom.productservice.model.*;
@@ -24,6 +25,9 @@ public interface ProductMapper {
     @Mapping(source = "childCategories", target = "children")
     ProductCategoryOptionModel mapEntityToOptionModel(ProductCategory entity);
 
+    default String mapColorToString(Color color) {
+        return color != null ? color.getName() : null;  // Return the 'name' of the color, or null if color is null
+    }
 
     CartProductModel mapEntityToCartModel(CheckoutProduct entity);
 }

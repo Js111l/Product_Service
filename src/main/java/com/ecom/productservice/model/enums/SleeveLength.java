@@ -2,15 +2,15 @@ package com.ecom.productservice.model.enums;
 
 import java.util.List;
 
-public enum SortType implements BaseEnum {
-    PRICE_ASC("Cena od najniższej"),
-    PRICE_DESC("Cena od najwyższej"),
-    POPULAR("Popularne"),
-    NEWEST("Nowości");
+public enum SleeveLength implements BaseEnum {
+    SHORT("Krotki"),
+    LONG("Dlugi"),
+    THREE_QUARTER("3/4"),
+    SLEEVELESS("Bez rekawow");
 
     private final String label;
 
-    SortType(String label) {
+    SleeveLength(String label) {
         this.label = label;
     }
 

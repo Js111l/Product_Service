@@ -72,14 +72,12 @@ public class ProductService implements BaseService<Product, Long> {
     public ProductModel getDetail(Long id) {
         var result = this.productRepository.findById(id).orElseThrow();
         var model = ProductMapper.INSTANCE.mapEntityToDetailModel(result);
-        final var mockSizes = List.of("S", "M", "L", "XL");
         final var mockColorUrls = List.of("/jeans.jpg");
         final var mockImages = List.of(
                 new ImageModel(null, "/jeans.jpg", "", ""),
                 new ImageModel(null, "/jeans.jpg", "", ""),
                 new ImageModel(null, "/jeans.jpg", "", "")
         );
-        model.setSizes(mockSizes);
         model.setColorImgUrls(mockColorUrls);
         model.setImages(mockImages);
         return model;

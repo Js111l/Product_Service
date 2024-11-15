@@ -1,5 +1,8 @@
 package com.ecom.productservice.service;
 
+import com.ecom.productservice.model.enums.BaseEnum;
+import org.apache.commons.lang3.EnumUtils;
+
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Files;
@@ -14,14 +17,13 @@ import java.util.stream.Stream;
 public class ClassService {
     private static final String SRC_MAIN_JAVA_PATH = "/src/main/java/";
 
-    public Enum[] getEnumValuesByType(String enumSimpleClassName) throws IOException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+    public List<String> getEnumValuesByType(String enumSimpleClassName) throws IOException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
         var classes = this.getAllSubTypesOf(Enum.class);
-        var clazz = classes.stream()
-                .filter(x -> x.getSimpleName().toUpperCase().equals(enumSimpleClassName.toUpperCase()))
+        Class<? extends Enum<?>> clazz = classes.stream()
+                .filter(x -> x.getSimpleName().equalsIgnoreCase(enumSimpleClassName))
                 .findFirst()
                 .orElseThrow();
-        var method = clazz.getMethod("values");
-        return ((Enum[]) method.invoke(null));
+        return Arrays.stream(clazz.getEnumConstants()).map(x->x.name()).toList();
     }
 
     public List<Class> getAllSubTypesOf(Class<?> clazz) throws IOException {

@@ -153,6 +153,19 @@ public class ProductController {
         this.checkoutService.add(model, sessionId);
     }
 
+    @DeleteMapping("/user-checkout")
+    public void deleteCheckoutProducts(@RequestParam(value = "productIds") List<Long> productIds,
+                                    HttpServletRequest servletRequest) {
+        String sessionId = null;
+        for (Cookie cookieElement : servletRequest.getCookies()) {
+            if (cookieElement.getName().equals("sessionId")) {
+                sessionId = cookieElement.getValue();
+                break;
+            }
+        }
+        this.checkoutService.delete(productIds, sessionId);
+    }
+
     @GetMapping("/user-checkout/products")
     public CartModel getProducts(HttpServletRequest servletRequest) {
         String sessionId = null;

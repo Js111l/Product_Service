@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
 @Service
@@ -22,7 +23,7 @@ public class CheckoutService {
     private final SecurityService securityService;
 
     public void add(CheckoutModel model, String sessionId) {
-        final var checkoutProductOptional = this.checkoutRepository.findByProductIdUserId(model.product().getId(), model.sessionId());
+        final var checkoutProductOptional = this.checkoutRepository.findByProductIdUserId(model.product().getId(), sessionId);
         if (checkoutProductOptional.isPresent()) {
             var entity = checkoutProductOptional.get();
             entity.setQuantity((int) (entity.getQuantity() + model.quantity()));
@@ -31,6 +32,14 @@ public class CheckoutService {
             var entity = CheckoutMapper.INSTANCE.mapModelToEntity(model);
             entity.setSessionId(sessionId);
             this.checkoutRepository.save(entity);
+        }
+    }
+
+    public void delete(List<Long> productIds, String sessionId) {
+        try {
+            this.checkoutRepository.deleteByProductIdsUserId(productIds, sessionId);
+        }catch (Exception ex){
+            throw new RuntimeException();
         }
     }
 
@@ -47,18 +56,19 @@ public class CheckoutService {
         return result == null ? 0 : result;
     }
 
+    private BigDecimal getPrice(Long price){
+        return BigDecimal.valueOf(price, 2);
+    }
     public CartModel getProductsFromCheckout(String sessionId) {
         final var totalPrice = new AtomicReference<>(BigDecimal.ZERO);
         final var list = new ArrayList<CartProductModel>();
         this.checkoutRepository.findByUserSessionId(sessionId).forEach((entity) -> {
-            //entity.getPrice()
-            var mockPrice = new BigDecimal("8999");
-            totalPrice.set(totalPrice.get().add(mockPrice));
+            totalPrice.set(getPrice(entity.getProduct().getPrice()).multiply(BigDecimal.valueOf(entity.getQuantity())));
             list.add(ProductMapper.INSTANCE.mapEntityToCartModel(entity));
         });
         return new CartModel(
                 totalPrice.get(),
-                new BigDecimal("1499"),
+                new BigDecimal("1499"),//metoda dostawy i elo
                 list
         );
     }
