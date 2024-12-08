@@ -6,8 +6,11 @@ public enum Fabric implements BaseEnum {
     COTTON("Bawelna"),
     POLYESTER("Poliester"),
     WOOL("Welna"),
-    LINEN("Len");
-
+    LINEN("Len"),
+    DENIM("Jeans"),
+    SILK("Jedwab"),
+    LEATHER("Skóra")
+;
     private final String label;
 
     Fabric(String label) {

@@ -1,4 +1,4 @@
-package com.ecom.productservice.model;
+package com.ecom.productservice.model.enums;
 
 public enum ProductSize{
     S,

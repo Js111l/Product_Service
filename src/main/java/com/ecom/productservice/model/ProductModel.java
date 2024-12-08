@@ -14,7 +14,7 @@ public class ProductModel {
     private String name;
     private String description;
     private List<String> sizes;
-    private List<ImageModel> images;   //todo product detail photos
+    private List<String> imageUrls;   //todo product detail photos
     private List<String> colorImgUrls;
     private BigDecimal price;
     private Long quantity; //quantity

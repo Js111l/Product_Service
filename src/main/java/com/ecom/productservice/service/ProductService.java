@@ -1,14 +1,16 @@
 package com.ecom.productservice.service;
 
+import com.ecom.productservice.controller.MainPageBannerModel;
 import com.ecom.productservice.criteria.ProductSearchCriteria;
 import com.ecom.productservice.dao.entities.Product;
 import com.ecom.productservice.dao.entities.UserProduct;
 import com.ecom.productservice.dao.mapper.ProductMapper;
+import com.ecom.productservice.dao.repository.MainPageBannerRepository;
 import com.ecom.productservice.dao.repository.ProductCategoryRepository;
 import com.ecom.productservice.dao.repository.ProductRepository;
 import com.ecom.productservice.dao.repository.UserProductRepository;
-import com.ecom.productservice.exception.ErrorKey;
-import com.ecom.productservice.exception.LogicalException;
+import com.ecom.productservice.exception.ApiExceptionType;
+import com.ecom.productservice.exception.ApplicationRuntimeException;
 import com.ecom.productservice.model.*;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -26,6 +28,7 @@ public class ProductService implements BaseService<Product, Long> {
     private final ProductRepository productRepository;
     private final UserProductRepository userProductRepository;
     private final ProductCategoryRepository productCategoryRepository;
+    private final MainPageBannerRepository mainPageBannerRepository;
 
     @Override
     public List<Product> getAll() {
@@ -36,14 +39,12 @@ public class ProductService implements BaseService<Product, Long> {
     public Product getById(Long id) {
         return this.productRepository
                 .findById(id)
-                .orElseThrow(() -> new LogicalException(ErrorKey.NOT_FOUND));
+                .orElseThrow(() -> new ApplicationRuntimeException(ApiExceptionType.NOT_FOUND));
     }
 
     @Override
     public Product deleteById(Long id) {
-        var productToDelete = getById(id);
-
-        return productToDelete;
+        return getById(id);
     }
 
     @Override
@@ -71,16 +72,7 @@ public class ProductService implements BaseService<Product, Long> {
 
     public ProductModel getDetail(Long id) {
         var result = this.productRepository.findById(id).orElseThrow();
-        var model = ProductMapper.INSTANCE.mapEntityToDetailModel(result);
-        final var mockColorUrls = List.of("/jeans.jpg");
-        final var mockImages = List.of(
-                new ImageModel(null, "/jeans.jpg", "", ""),
-                new ImageModel(null, "/jeans.jpg", "", ""),
-                new ImageModel(null, "/jeans.jpg", "", "")
-        );
-        model.setColorImgUrls(mockColorUrls);
-        model.setImages(mockImages);
-        return model;
+        return ProductMapper.INSTANCE.mapEntityToDetailModel(result);
     }
 
     public Long getFavoritesCount(Long userId) {
@@ -158,5 +150,11 @@ public class ProductService implements BaseService<Product, Long> {
         entity.setProductId(requestModel.productId());
         entity.setSessionId(sessionId);
         this.userProductRepository.save(entity);
+    }
+
+    public List<MainPageBannerModel> getBannerData() {
+        return this.mainPageBannerRepository.findAllActive()
+                .stream().map(x -> new MainPageBannerModel(x.getId(), x.getActive(), x.getImageUrl()))
+                .toList();
     }
 }

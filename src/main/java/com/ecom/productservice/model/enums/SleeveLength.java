@@ -5,7 +5,6 @@ import java.util.List;
 public enum SleeveLength implements BaseEnum {
     SHORT("Krotki"),
     LONG("Dlugi"),
-    THREE_QUARTER("3/4"),
     SLEEVELESS("Bez rekawow");
 
     private final String label;

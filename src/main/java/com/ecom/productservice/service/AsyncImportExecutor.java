@@ -1,7 +1,7 @@
 package com.ecom.productservice.service;
 
-import com.ecom.productservice.exception.ErrorKey;
-import com.ecom.productservice.exception.LogicalException;
+import com.ecom.productservice.exception.ApiExceptionType;
+import com.ecom.productservice.exception.ApplicationRuntimeException;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Async;
@@ -27,7 +27,7 @@ public class AsyncImportExecutor {
                 .thenApply(x -> ResponseEntity.of(Optional.empty()))//empty response
                 .exceptionally(ex -> {
                     this.productImportService.stopImportJob(importUuid);
-                    throw new LogicalException(ErrorKey.SERVER_ERROR);
+                    throw new ApplicationRuntimeException(ApiExceptionType.SERVER_ERROR);
                 });
     }
 }

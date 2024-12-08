@@ -1,6 +1,6 @@
 package com.ecom.productservice.dao.entities;
 
-import com.ecom.productservice.model.ProductSize;
+import com.ecom.productservice.model.enums.ProductSize;
 import com.ecom.productservice.model.enums.Fabric;
 import com.ecom.productservice.model.enums.SleeveLength;
 import com.ecom.productservice.model.enums.Style;
@@ -60,6 +60,12 @@ public class Product extends BaseEntity {
     )
     @Enumerated(EnumType.STRING)
     private List<ProductSize> sizes;
+
+    @Column(
+            name = "detail_images",
+            columnDefinition = "text[]"
+    )
+    private List<String> imageUrls;
 
     @ManyToOne
     @JoinColumn(name = "brand_id")

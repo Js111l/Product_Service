@@ -3,7 +3,7 @@ package com.ecom.productservice.controller;
 import com.ecom.productservice.criteria.ProductSearchCriteria;
 import com.ecom.productservice.model.*;
 import com.ecom.productservice.service.*;
-import jakarta.servlet.http.Cookie;
+import com.ecom.productservice.utils.CookieUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -31,22 +31,21 @@ public class ProductController {
 //            @RequestParam(value = "size") Integer size,
 //            @RequestParam(value = "sortField") String sortField,
 //            @RequestParam(value = "sortAsc") Boolean sortAsc,
-//            @RequestParam("bestseller") Boolean bestseller,
-            HttpServletRequest servletRequest
+            //@RequestParam("bestseller") Boolean bestseller
     ) {
-        //TODO
         final var sc = ProductSearchCriteria.builder()
 //                .page(page)
 //                .size(size)
 //                .sortField(sortField)
 //                .sortAsc(sortAsc)
-//                .bestsellerOrNewFlag(bestseller)
+                //.bestsellerOrNewFlag(bestseller)
                 .page(0)
                 .size(20)
                 .sortField("id")
                 .sortAsc(true)
                 .bestsellerOrNewFlag(null)
                 .build();
+
         return productService.getDahboardModels(sc);
     }
 
@@ -62,7 +61,6 @@ public class ProductController {
                 .size(size)
                 .sortField(sortField)
                 .sortAsc(sortAsc)
-                //.categoryPath(categoryPath)
                 .categories(categories)
                 .build();
 
@@ -77,21 +75,13 @@ public class ProductController {
             @RequestParam(value = "sortAsc") Boolean sortAsc,
             @RequestParam(value = "categories", required = false) List<Long> categories,
             HttpServletRequest servletRequest) {
-        var sessionId = "";
-        for (Cookie cookieElement : servletRequest.getCookies()) {
-            if (cookieElement.getName().equals("sessionId")) {
-                sessionId = cookieElement.getValue();
-                break;
-            }
-        }
-
         final var sc = ProductSearchCriteria.builder()
                 .page(page)
                 .size(size)
                 .sortField(sortField)
                 .sortAsc(sortAsc)
                 .categories(categories)
-                .sessionId(sessionId)
+                .sessionId(CookieUtil.getSessionIdFromRequest(servletRequest))
                 .getFavoriteList(true)
                 .build();
 
@@ -100,14 +90,7 @@ public class ProductController {
 
     @PostMapping("/user-favorite")
     private ResponseEntity<HttpStatus> addProductToFavorite(@RequestBody UserProductRequestModel requestModel, HttpServletRequest servletRequest) {
-        String sessionId = null;
-        for (Cookie cookieElement : servletRequest.getCookies()) {
-            if (cookieElement.getName().equals("sessionId")) {
-                sessionId = cookieElement.getValue();
-                break;
-            }
-        }
-        productService.addUserProduct(requestModel, sessionId);
+        productService.addUserProduct(requestModel, CookieUtil.getSessionIdFromRequest(servletRequest));
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
@@ -134,83 +117,42 @@ public class ProductController {
     }
 
     @PostMapping("/upload")
-    public CompletableFuture<ResponseEntity<Object>> importUsers(@RequestPart("productsCsv") MultipartFile csvFile,
-                                                                 HttpServletRequest servletRequest) {
+    public CompletableFuture<ResponseEntity<Object>> importUsers(@RequestPart("productsCsv") MultipartFile csvFile, HttpServletRequest servletRequest) {
         final var currentUser = this.securityService.getCurrentUser(servletRequest.getHeader("Authorization"));
         return this.importExecutor.importProducts(csvFile, currentUser.email());
     }
 
     @PostMapping("/user-checkout")
-    public void addCheckoutProducts(@RequestBody CheckoutModel model,
-                                    HttpServletRequest servletRequest) {
-        String sessionId = null;
-        for (Cookie cookieElement : servletRequest.getCookies()) {
-            if (cookieElement.getName().equals("sessionId")) {
-                sessionId = cookieElement.getValue();
-                break;
-            }
-        }
-        this.checkoutService.add(model, sessionId);
+    public void addCheckoutProducts(@RequestBody CheckoutModel model, HttpServletRequest servletRequest) {
+        this.checkoutService.add(model, CookieUtil.getSessionIdFromRequest(servletRequest));
     }
 
     @DeleteMapping("/user-checkout")
-    public void deleteCheckoutProducts(@RequestParam(value = "productIds") List<Long> productIds,
-                                    HttpServletRequest servletRequest) {
-        String sessionId = null;
-        for (Cookie cookieElement : servletRequest.getCookies()) {
-            if (cookieElement.getName().equals("sessionId")) {
-                sessionId = cookieElement.getValue();
-                break;
-            }
-        }
-        this.checkoutService.delete(productIds, sessionId);
+    public void deleteCheckoutProducts(@RequestParam(value = "productIds") List<Long> productIds, HttpServletRequest servletRequest) {
+        this.checkoutService.delete(productIds, CookieUtil.getSessionIdFromRequest(servletRequest));
     }
 
     @GetMapping("/user-checkout/products")
     public CartModel getProducts(HttpServletRequest servletRequest) {
-        String sessionId = null;
-        for (Cookie cookieElement : servletRequest.getCookies()) {
-            if (cookieElement.getName().equals("sessionId")) {
-                sessionId = cookieElement.getValue();
-                break;
-            }
-        }
-        return this.checkoutService.getProductsFromCheckout(sessionId);
+        return this.checkoutService.getProductsFromCheckout(CookieUtil.getSessionIdFromRequest(servletRequest));
     }
 
 
     @PostMapping("/user-checkout/products")
-    public void setCheckoutProductQuantity(//@PathVariable("id") Long id,
-                                           @RequestParam("productId") Long id,
-                                           @RequestParam("quantity") Long value, HttpServletRequest servletRequest) {
-        String sessionId = null;
-        for (Cookie cookieElement : servletRequest.getCookies()) {
-            if (cookieElement.getName().equals("sessionId")) {
-                sessionId = cookieElement.getValue();
-                break;
-            }
-        }
-        this.checkoutService.setQuantity(id, value, sessionId);
+    public void setCheckoutProductQuantity(@RequestParam("productId") Long id, @RequestParam("quantity") Long value, HttpServletRequest servletRequest) {
+        this.checkoutService.setQuantity(id, value, CookieUtil.getSessionIdFromRequest(servletRequest));
     }
 
 
     @GetMapping("/user-checkout")
     private CheckoutCountModel getCheckoutCount(HttpServletRequest servletRequest) {
-        String sessionId = null;
-        for (Cookie cookieElement : servletRequest.getCookies()) {
-            if (cookieElement.getName().equals("sessionId")) {
-                sessionId = cookieElement.getValue();
-                break;
-            }
-        }
         return new CheckoutCountModel(
-                this.checkoutService.getCheckoutCount(sessionId)
+                this.checkoutService.getCheckoutCount(CookieUtil.getSessionIdFromRequest(servletRequest))
         );
     }
 
     @GetMapping("/categories/children")
-    public List<ProductCategoryModel> getDirectChildren(@RequestParam("parentPath") String parentPrefix,
-                                                        @RequestParam("firstLevel") Boolean firstLevel) {
+    public List<ProductCategoryModel> getDirectChildren(@RequestParam("parentPath") String parentPrefix, @RequestParam("firstLevel") Boolean firstLevel) {
         return this.productService.getChildrenCategories(parentPrefix, firstLevel);
     }
 
@@ -227,6 +169,11 @@ public class ProductController {
     @GetMapping("/categories/menubar")
     public List<ProductCategoryMenuBarModel> getCategoriesForMenuBar() {
         return this.productService.getMenuBarCategories();
+    }
+
+    @GetMapping("/banner-data")
+    public List<MainPageBannerModel> getBannerData() {
+        return this.productService.getBannerData();
     }
 }
 
